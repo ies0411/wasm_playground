@@ -1,0 +1,221 @@
+cmake_minimum_required(VERSION 3.5)
+project(plane_test)
+
+execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
+
+# Convert command output into a CMake list
+STRING(REGEX REPLACE ";" "\\\\;" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+STRING(REGEX REPLACE "\n" ";" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+
+# Fix https://stackoverflow.com/questions/32197663/how-can-i-remove-the-the-location-property-may-not-be-read-from-target-error-i
+list(FILTER CMAKE_PROPERTY_LIST EXCLUDE REGEX "^LOCATION$|^LOCATION_|_LOCATION$")
+
+# For some reason, "TYPE" shows up twice - others might too?
+list(REMOVE_DUPLICATES CMAKE_PROPERTY_LIST)
+
+# build whitelist by filtering down from CMAKE_PROPERTY_LIST in case cmake is
+# a different version, and one of our hardcoded whitelisted properties
+# doesn't exist!
+unset(CMAKE_WHITELISTED_PROPERTY_LIST)
+
+foreach(prop ${CMAKE_PROPERTY_LIST})
+  if(prop MATCHES "^(INTERFACE|[_a-z]|IMPORTED_LIBNAME_|MAP_IMPORTED_CONFIG_)|^(COMPATIBLE_INTERFACE_(BOOL|NUMBER_MAX|NUMBER_MIN|STRING)|EXPORT_NAME|IMPORTED(_GLOBAL|_CONFIGURATIONS|_LIBNAME)?|NAME|TYPE|NO_SYSTEM_FROM_IMPORTED)$")
+    list(APPEND CMAKE_WHITELISTED_PROPERTY_LIST ${prop})
+  endif()
+endforeach(prop)
+
+function(print_properties)
+  message("CMAKE_PROPERTY_LIST = ${CMAKE_PROPERTY_LIST}")
+endfunction(print_properties)
+
+function(print_whitelisted_properties)
+  message("CMAKE_WHITELISTED_PROPERTY_LIST = ${CMAKE_WHITELISTED_PROPERTY_LIST}")
+endfunction(print_whitelisted_properties)
+
+function(print_target_properties tgt)
+  if(NOT TARGET ${tgt})
+    message("There is no target named '${tgt}'")
+    return()
+  endif()
+
+  get_target_property(target_type ${tgt} TYPE)
+
+  if(target_type STREQUAL "INTERFACE_LIBRARY")
+    set(PROP_LIST ${CMAKE_WHITELISTED_PROPERTY_LIST})
+  else()
+    set(PROP_LIST ${CMAKE_PROPERTY_LIST})
+  endif()
+
+  foreach(prop ${PROP_LIST})
+    string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" prop ${prop})
+
+    # message ("Checking ${prop}")
+    get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
+
+    if(propval)
+      get_target_property(propval ${tgt} ${prop})
+      message("${tgt} ${prop} = ${propval}")
+    endif()
+  endforeach(prop)
+endfunction(print_target_properties)
+
+# ===================================================================================
+set(PROJECT_NAME plane_test)
+set(CMAKE_CXX_STANDARD 17)
+
+# set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(OPENCV ../../../thirdparty/opencv)
+set(BUILD_OPENCV_DIR ./build_opencv)
+
+set(PCL ../../../thirdparty/pcl/build)
+set(PCL_LIB ../../../thirdparty/pcl/build/lib)
+set(PCL_INCLUDE ${PCL}/include/pcl-1.12)
+set(BUILD_PCL_DIR ./build_pcl)
+
+set(FLANN ../../../thirdparty/flann/build)
+set(FLANN_INCLUDE ${FLANN}/include)
+set(FLANN_LIB ${FLANN}/lib)
+
+set(BOOST ../../../thirdparty/boost/build)
+set(BOOST_INCLUDE ${BOOST}/include)
+set(BOOST_LIB ${BOOST}/lib)
+set(BUILD_BOOST_DIR ./build_boost)
+
+set(EMSDK_FLAGS
+  "-s WASM=1\
+    -s USE_ES6_IMPORT_META=1\
+    -s EXPORT_ES6=1\
+    -O3\
+    -s EXPORT_NAME='createModule'\
+    -s EXPORTED_FUNCTIONS='[\"_malloc\", \"_free\"]'\
+    -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]'\
+    -s EXPORTED_RUNTIME_METHODS='FS'\
+    -s ENVIRONMENT='web,webview,worker'\
+    -s ALLOW_MEMORY_GROWTH=1\
+    -s FORCE_FILESYSTEM=1\
+    ")
+
+# -s ENVIRONMENT='web'\
+set(CMAKE_CXX_FLAGS)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EMSDK_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EMSDK_FLAGS}")
+
+# add_subdirectory(tflite)
+find_package(Ceres REQUIRED)
+
+# -s Release\
+# MEMO : ceres lib cmake에서 find_package(thread) 삭제
+add_subdirectory(${OPENCV} ${BUILD_OPENCV_DIR})
+add_subdirectory(${PCL} ${BUILD_PCL_DIR})
+add_subdirectory(${BOOST} ${BUILD_BOOST_DIR})
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/include
+  ${CERES_INCLUDE_DIRS}
+  ${BOOST_INCLUDE}
+  ${PCL_INCLUDE}
+  ${FLANN_INCLUDE}
+  ${EIGEN_INCLUDE}
+)
+
+file(GLOB PCL_LINK_LIBS ${PCL_LIB}/*.a)
+file(GLOB SRCS *.cpp)
+
+file(GLOB BOOST_LINK_LIBS ${BOOST_LIB}/*.a)
+
+# add_library()
+
+# ====================================================
+# #1.original [OK]
+# ====================================================
+# link_directories(
+# ${PCL_LIB}
+# ${FLANN_LIB}
+# ${BOOST_LIB}
+# )
+# add_executable(findplane
+# find_plane.cpp
+# )
+# target_link_libraries(findplane opencv ${CERES_LIBRARIES} flann_cpp_s)
+# target_link_libraries(findplane
+# ${PCL_LINK_LIBS}
+# boost_filesystem
+# boost_regex
+# boost_system
+# boost_date_time
+# boost_iostreams
+# )
+
+# ====================================================
+# #2. remove PCL_LIB [OK]
+# ( ${PCL_LINK_LIBS} holds path )
+# ====================================================
+# link_directories(
+# # ${PCL_LIB}
+# ${FLANN_LIB}
+# ${BOOST_LIB}
+# )
+# add_executable(findplane
+# find_plane.cpp
+# )
+# target_link_libraries(findplane opencv ${CERES_LIBRARIES} flann_cpp_s)
+# target_link_libraries(findplane
+# ${PCL_LINK_LIBS}
+# boost_filesystem
+# boost_regex
+# boost_system
+# boost_date_time
+# boost_iostreams
+# )
+
+# ====================================================
+# #3. changed boost just like pcl [FAIL]
+# ( ${BOOST_LINK_LIBS} holds path )
+# ====================================================
+link_directories(
+# ${PCL_LIB}
+${FLANN_LIB}
+# ${BOOST_LIB}
+)
+add_executable(findplane
+find_plane.cpp
+)
+message(STATUS "BOOST LIBS : ${BOOST_LINK_LIBS}")
+target_link_libraries(findplane opencv ${CERES_LIBRARIES} flann_cpp_s)
+target_link_libraries(findplane
+${PCL_LINK_LIBS}
+${BOOST_LINK_LIBS}
+)
+
+# ====================================================
+# #4. without boost path, but boost lib
+# ====================================================
+link_directories(
+  ${PCL_LIB}
+  ${FLANN_LIB}
+
+  # ${BOOST_LIB}
+)
+add_executable(findplane
+  find_plane.cpp
+)
+target_link_libraries(findplane opencv ${CERES_LIBRARIES} flann_cpp_s)
+target_link_libraries(findplane
+  ${PCL_LINK_LIBS}
+  boost_filesystem
+  boost_regex
+  boost_system
+  boost_date_time
+  boost_iostreams
+)
+
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/../js/src/wasm)
+
+install(
+  TARGETS findplane DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+install(
+  FILES build/findplane.js DESTINATION ${CMAKE_INSTALL_PREFIX}
+  FILES build/findplane.wasm DESTINATION ${CMAKE_INSTALL_PREFIX}
+)

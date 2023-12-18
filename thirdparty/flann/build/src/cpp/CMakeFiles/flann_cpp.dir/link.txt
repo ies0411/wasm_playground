@@ -1,0 +1,2 @@
+/home/server-003/emsdk/upstream/emscripten/emar qc ../../lib/libflann_cpp.a CMakeFiles/flann_cpp.dir/flann/flann_cpp.cpp.o CMakeFiles/flann_cpp.dir/flann/lz4/lz4.c.o CMakeFiles/flann_cpp.dir/flann/lz4/lz4hc.c.o
+/home/server-003/emsdk/upstream/emscripten/emranlib ../../lib/libflann_cpp.a

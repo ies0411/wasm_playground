@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script src="hello.js"></script>
+    <script>
+      function js_fib(n) {
+        if (n == 0 || n == 1) return 1;
+        else return js_fib(n - 1) + js_fib(n - 2);
+      }
+      var js_wrapped_fib = Module.cwrap('fib', 'number', ['number']);
+
+      function pressWasm() {
+        var start = Date.now();
+        console.log('The result of fib is:', js_wrapped_fib(35));
+        var end = Date.now();
+        console.log('wasm time : ', end - start);
+      }
+      function pressJs() {
+        var start = Date.now();
+        console.log('The result of fib is:', js_fib(35));
+        var end = Date.now();
+        console.log('js time : ', end - start);
+      }
+    </script>
+
+    <button onclick="pressWasm()">wasm!</button>
+    <button onclick="pressJs()">js!</button>
+    <p>Open the console to see the result!</p>
+  </body>
+</html>

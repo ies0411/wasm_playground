@@ -1,0 +1,21 @@
+Determining if the include file pthread.h exists failed with the following output:
+Change Dir: /Users/eunsoo/Desktop/study/wasm_playground/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_36f3d/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_36f3d.dir/build.make CMakeFiles/cmTC_36f3d.dir/build
+Building C object CMakeFiles/cmTC_36f3d.dir/CheckIncludeFile.c.o
+/usr/bin/clang   -s WASM=1    -s USE_ES6_IMPORT_META=1    -s EXPORT_ES6=1    -O3    -s EXPORT_NAME='createModule'    -s EXPORTED_FUNCTIONS='["_malloc", "_free"]'    -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]'    -s EXPORTED_RUNTIME_METHODS='FS'    -s ENVIRONMENT='web,webview,worker'    -s ALLOW_MEMORY_GROWTH=1    -s FORCE_FILESYSTEM=1      -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk -MD -MT CMakeFiles/cmTC_36f3d.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_36f3d.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_36f3d.dir/CheckIncludeFile.c.o -c /Users/eunsoo/Desktop/study/wasm_playground/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+clang: error: no such file or directory: 'WASM=1'
+clang: error: no such file or directory: 'USE_ES6_IMPORT_META=1'
+clang: error: no such file or directory: 'EXPORT_ES6=1'
+clang: error: no such file or directory: 'EXPORT_NAME=createModule'
+clang: error: no such file or directory: 'EXPORTED_FUNCTIONS=["_malloc", "_free"]'
+clang: error: no such file or directory: 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]'
+clang: error: no such file or directory: 'EXPORTED_RUNTIME_METHODS=FS'
+clang: error: no such file or directory: 'ENVIRONMENT=web,webview,worker'
+clang: error: no such file or directory: 'ALLOW_MEMORY_GROWTH=1'
+clang: error: no such file or directory: 'FORCE_FILESYSTEM=1'
+make[1]: *** [CMakeFiles/cmTC_36f3d.dir/CheckIncludeFile.c.o] Error 1
+make: *** [cmTC_36f3d/fast] Error 2
+
+
+

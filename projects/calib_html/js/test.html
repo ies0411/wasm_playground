@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- <script async src="https://docs.opencv.org/3.4/opencv.js"></script> -->
+    <!-- <script defer src="wasmCalib.js"></script> -->
+    <script defer src="extrinsicCalib_origin.js"></script>
+
+    <script>
+      function wasmchecker(event) {
+        let add = Module.cwrap('add', 'number');
+        console.log(add(20));
+      }
+    </script>
+    <div>
+      <button onclick="wasmchecker(event)">wasmchecker</button>
+    </div>
+
+    <script>
+      function checker(event) {
+        event.preventDefault(); //submit 할때 새로고침 되는것을 방지
+        let dx = document.getElementById('dx').value;
+        let dy = document.getElementById('dy').value;
+        let rows = document.getElementById('rows').value;
+        let cols = document.getElementById('cols').value;
+        var wasm_func = Module.cwrap('readCheckerboardParams', 'number');
+        console.log(dx, dy, rows, cols);
+        array_js = wasm_func(dx, dy, rows, cols);
+        console.log('result:', array_js);
+      }
+    </script>
+    <div>
+      <label for="dx">dx</label>
+      <input type="text" id="dx" />
+
+      <label for="dy">dy</label>
+      <input type="text" id="dy" />
+
+      <label for="rows">rows</label>
+      <input type="text" id="rows" />
+
+      <label for="cols">cols</label>
+      <input type="text" id="cols" />
+
+      <button onclick="checker(event)">summit</button>
+    </div>
+    <hr />
+    <script>
+      function arrayToPtr(array) {
+        var nByte = 8;
+        var ptr = Module._malloc(array.length * nByte);
+        Module.HEAPF64.set(array, ptr / nByte);
+        return ptr;
+      }
+
+      function cameraParam(event) {
+        event.preventDefault(); //submit 할때 새로고침 되는것을 방지
+        let arr = [];
+        let image_height = document.getElementById('image_height').value;
+        arr[0] = image_height;
+        let image_width = document.getElementById('image_width').value;
+        arr[1] = image_width;
+        let k1 = document.getElementById('k1').value;
+        arr[2] = k1;
+        let k2 = document.getElementById('k2').value;
+        arr[3] = k2;
+        let p1 = document.getElementById('p1').value;
+        arr[4] = p1;
+        let p2 = document.getElementById('p2').value;
+        arr[5] = p2;
+        let p3 = document.getElementById('p3').value;
+        arr[6] = p3;
+        let fx = document.getElementById('fx').value;
+        arr[7] = fx;
+        let fy = document.getElementById('fy').value;
+        arr[8] = fy;
+        let cx = document.getElementById('cx').value;
+        arr[9] = cx;
+        let cy = document.getElementById('cy').value;
+        arr[10] = cy;
+
+        var wasm_func = Module.cwrap('readCameraParams', 'number', ['number']);
+        console.log(arr);
+        array_js = wasm_func(arrayToPtr(arr));
+        console.log('result:', array_js);
+      }
+    </script>
+    <div>
+      <label for="image_height">image_height</label>
+      <input type="text" id="image_height" />
+
+      <label for="image_width">image_width</label>
+      <input type="text" id="image_width" />
+
+      <label for="k1">k1</label>
+      <input type="text" id="k1" />
+
+      <label for="k2">k2</label>
+      <input type="text" id="k2" />
+
+      <label for="p1">p1</label>
+      <input type="text" id="p1" />
+
+      <label for="p2">p2</label>
+      <input type="text" id="p2" />
+
+      <label for="p3">p3</label>
+      <input type="text" id="p3" />
+
+      <label for="fx">fx</label>
+      <input type="text" id="fx" />
+
+      <label for="fy">fy</label>
+      <input type="text" id="fy" />
+
+      <label for="cx">cx</label>
+      <input type="text" id="cx" />
+
+      <label for="cy">cy</label>
+      <input type="text" id="cy" />
+
+      <button onclick="cameraParam(event)">summit</button>
+    </div>
+
+    <hr />
+
+    <hr />
+    <script>
+      function arrayToPtr(array) {
+        var nByte = 8;
+        var ptr = Module._malloc(array.length * nByte);
+        Module.HEAPF64.set(array, ptr / nByte);
+        return ptr;
+      }
+      function pcdFilter(event) {
+        event.preventDefault(); //submit 할때 새로고침 되는것을 방지
+        filter_arr = [];
+        let x_min = document.getElementById('x_min').value;
+        filter_arr[0] = x_min;
+        let x_max = document.getElementById('x_max').value;
+        filter_arr[1] = x_max;
+        let y_min = document.getElementById('y_min').value;
+        filter_arr[2] = y_min;
+        let y_max = document.getElementById('y_max').value;
+        filter_arr[3] = y_max;
+        let z_min = document.getElementById('z_min').value;
+        filter_arr[4] = z_min;
+        let z_max = document.getElementById('z_max').value;
+        filter_arr[5] = z_max;
+
+        var wasm_func = Module.cwrap('readCheckerPosition', 'number', ['number']);
+        array_js = wasm_func(arrayToPtr(filter_arr));
+        console.log('result:', array_js);
+      }
+    </script>
+    <div>
+      <label for="x_min">x_min</label>
+      <input type="text" id="x_min" />
+
+      <label for="x_max">x_max</label>
+      <input type="text" id="x_max" />
+
+      <label for="y_min">y_min</label>
+      <input type="text" id="y_min" />
+
+      <label for="y_max">y_max</label>
+      <input type="text" id="y_max" />
+
+      <label for="z_min">z_min</label>
+      <input type="text" id="z_min" />
+
+      <label for="z_max">z_max</label>
+      <input type="text" id="z_max" />
+
+      <button onclick="pcdFilter(event)">summit</button>
+    </div>
+    <hr />
+
+    <form>
+      <div>
+        <label for="input_file">img file upload</label>
+        <input type="file" id="img_input_file" accept="image/*" />
+        <div>
+          <button onclick="imgupload(event)">img summit</button>
+        </div>
+      </div>
+      <div>
+        <label for="input_file">pcd file upload</label>
+        <input type="file" id="pcd_input_file" />
+        <div>
+          <button onclick="pcdupload(event)">PCD summit</button>
+        </div>
+      </div>
+    </form>
+    <form>
+      <div>
+        <button onclick="calib(event)">solve</button>
+      </div>
+    </form>
+    <script>
+      function calib(event) {
+        event.preventDefault();
+        var wasm_func = Module.cwrap('solveCalib', 'number');
+        array_js = wasm_func(2);
+        console.log(array_js);
+      }
+    </script>
+
+    <script>
+      function pcdupload(event) {
+        event.preventDefault(); //submit 할때 새로고침 되는것을 방지
+        let pcdfileObject = document.getElementById('pcd_input_file');
+        let pcdfileName = pcdfileObject.files[0];
+        let fr = new FileReader();
+        fr.readAsText(pcdfileName, 'utf-8');
+        fr.onload = () => {
+          parseText(fr.result);
+        };
+      }
+
+      function parseText(text) {
+        var wasm_func = Module.cwrap('readPCD', 'number', ['string']);
+        array_js = wasm_func(text);
+        console.log(array_js);
+      }
+    </script>
+    <script>
+      function imgupload(event) {
+        event.preventDefault(); //submit 할때 새로고침 되는것을 방지
+        let imgfileObject = document.getElementById('img_input_file');
+        let imgfileName = imgfileObject.files[0];
+        var reader = new FileReader();
+        reader.readAsDataURL(imgfileName); //파일을 읽는 메서드
+        reader.onload = function () {
+          var wasm_func = Module.cwrap('readImg', 'number', ['string']);
+          array_js = wasm_func(reader.result);
+          console.log(array_js);
+        };
+      }
+    </script>
+  </body>
+</html>
